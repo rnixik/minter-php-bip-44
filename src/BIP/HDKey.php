@@ -3,6 +3,7 @@
 namespace BIP;
 
 use Elliptic\EC;
+use kornrunner\keccak;
 use BIP\Library\Helper;
 use BIP\Library\KeyPair;
 
@@ -181,7 +182,9 @@ class HDKey
         }
 
         $this->data['privateKey'] = str_repeat('0', 64 - strlen($privateKey)) . $privateKey;
-        $this->data['publicKey'] = $this->getPublicKeyFromPrivate($privateKey);
+        $this->data['publicKey'] = $this->getPublicKeyFromPrivate($privateKey, true);
+        $this->data['uncompressedPublicKey'] = $this->getPublicKeyFromPrivate($privateKey, false);
+        $this->data['address'] = $this->getAddressFromUncompressedPublicKey($this->data['uncompressedPublicKey']);
         $this->data['fingerprint'] = $this->computeFingerprint($this->data['publicKey']);
     }
 
@@ -189,9 +192,10 @@ class HDKey
      * Compute public key from private using elliptic curve
      *
      * @param string $privateKey
+     * @param boolean $comprossed
      * @return string
      */
-    protected function getPublicKeyFromPrivate(string $privateKey): string
+    protected function getPublicKeyFromPrivate(string $privateKey, bool $comprossed): string
     {
         $this->ellipticCurve = new EC('secp256k1');
         $keyPair = new KeyPair($this->ellipticCurve, [
@@ -199,7 +203,22 @@ class HDKey
             'privEnc' => 'hex'
         ]);
 
-        return $keyPair->getPublic(true, 'hex');
+        if ($comprossed) {
+            return $keyPair->getPublic(true, 'hex');
+        } else {
+            return $keyPair->getPublic('hex');
+        }
+    }
+
+    /**
+     * Get the address from the uncompressed public key
+     *
+     * @param string $uncompressedPublicKey
+     * @return string
+     */
+    protected function getAddressFromUncompressedPublicKey(string $uncompressedPublicKey): string
+    {
+        return '0x' . substr(Keccak::hash(substr(hex2bin($uncompressedPublicKey), 1), 256), 24);
     }
 
     /**
