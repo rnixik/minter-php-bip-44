@@ -3,7 +3,7 @@
 namespace BIP;
 
 use Elliptic\EC;
-use kornrunner\keccak;
+use kornrunner\Keccak;
 use BIP\Library\Helper;
 use BIP\Library\KeyPair;
 
