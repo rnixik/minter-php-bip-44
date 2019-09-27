@@ -1,5 +1,5 @@
 {
-  "name": "liuxufei/minter-php-bip-44",
+  "name": "rnix/minter-php-bip-44",
   "autoload": {
     "psr-0" : {
       "BIP\\" : "src"
